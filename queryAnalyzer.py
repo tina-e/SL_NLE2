@@ -19,13 +19,14 @@ def getReverseName(name):
 
 #returns the database id of the player by name
 def getPlayerIDByName(name):
+    import sqlite3
+    sqlite_file = 'database.sqlite'
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
     queryText = 'SELECT id FROM player WHERE player_name = "'+ str(name)+'"'
     c.execute(queryText)
     playerID = c.fetchall()
     conn.close()
-    
     return playerID[0][0]
 
 #Returns list with names of found players
@@ -40,6 +41,8 @@ def getPlayersInQuery(query):
 #search for leagues##################################################################################
 
 def getAllCountries():
+    import sqlite3
+    sqlite_file = 'database.sqlite'
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
     c.execute('SELECT name FROM country')
@@ -53,6 +56,8 @@ def getRegExForCountries():
 
 #return the database id of the country by name
 def getCountryIDByName(name):
+    import sqlite3
+    sqlite_file = 'database.sqlite'
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
     queryText = 'SELECT id FROM country WHERE name = "'+ name+'"'
@@ -63,6 +68,7 @@ def getCountryIDByName(name):
 
 #searches country information in the query
 def getCountryListInQuery(query):
+    import re
     foundCountryList = list()
     for regEx in getRegExForCountries():
         #if re.search(regEx + " (League|Liga)", query):
@@ -74,6 +80,8 @@ def getCountryListInQuery(query):
 #search for leagues##################################################################################
 
 def getAllLeagues():
+    import sqlite3
+    sqlite_file = 'database.sqlite'
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
     c.execute('SELECT name FROM league')
@@ -105,6 +113,8 @@ def getLeagueNameParts(name):
 
 #returns the database id of the league by name
 def getLeagueIDByName(name):
+    import sqlite3
+    sqlite_file = 'database.sqlite'
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
     queryText = 'SELECT id FROM league WHERE name = "'+ name+'"'
@@ -113,12 +123,12 @@ def getLeagueIDByName(name):
     conn.close()
     return leagueID[0][0]
 
-#returns a list with names of found leagues
+#returns a list with IDs of found leagues
 def getLeaguesInQuery(query):
     leagueList = list()
     for name in getAllLeagues():
         if name[0] in query:
-            leagueList.append(name[0])
+            leagueList.append(getLeagueIDByName(name[0]))
         else:
             for part in getLeagueNameParts(name[0]):
                 if part in query:
@@ -127,3 +137,103 @@ def getLeaguesInQuery(query):
     for foundCountry in getCountryListInQuery(query):
         leagueList.append(getCountryIDByName(foundCountry))
     return leagueList
+
+
+#search for teams##################################################################################
+
+def getAllTeamNames():
+    import sqlite3
+    sqlite_file = 'database.sqlite'
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+    c.execute('SELECT team_long_name FROM team')
+    teamNames = c.fetchall()
+    conn.close()
+    return teamNames
+
+def getAllTeamAbbrevs():
+    import sqlite3
+    sqlite_file = 'database.sqlite'
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+    c.execute('SELECT team_short_name FROM team')
+    teamAbbrevs = c.fetchall()
+    conn.close()
+    return teamAbbrevs
+
+def splitTeamNames():
+    validInputForTeams = list()
+    #first split all team names
+    teamNamesSplitted = list()
+    for team in getAllTeamNames():
+        teamNamesSplitted.append(team.split())
+    #only allow input that makes sense 
+    for team in getAllTeamNames():
+        #remove not neccessary abbrevs
+        i = 0
+        for part in teamNamesSplitted:
+            if len(part) > 3:
+                validInputForTeams[i].append(part)
+            i += 1
+        #dont split if it would cause ambiguity
+        j = 0
+        for part in teamNamesSplitted:
+            if checkDublicates(getAllTeamNames(), part):
+                validInputForTeams[j].append(part)
+            j += 1
+    return validInputForTeams    
+
+#check if there are teams that include the same names (e.g. "Manchester United" and "Manchester City")
+def checkDublicates(teamList, part):
+    count = 0
+    for team in teamList:
+        for element in team:
+            if element == part:
+                count += 1
+    if count < 2:
+        return True
+    else:
+        return False
+
+def getTeamIDByName(name):
+    import sqlite3
+    sqlite_file = 'database.sqlite'
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+    queryText = 'SELECT id FROM team WHERE team_long_name = "'+ name+'"'
+    c.execute(queryText)
+    teamID = c.fetchall()
+    conn.close()
+    return teamID[0][0]
+
+def getTeamIDByAbbrev(teamAbbrev):
+    import sqlite3
+    sqlite_file = 'database.sqlite'
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+    queryText = 'SELECT id FROM team WHERE team_short_name = "'+ teamAbbrev+'"'
+    c.execute(queryText)
+    teamID = c.fetchall()
+    conn.close()
+    return teamID[0][0]
+
+#returns a list with IDs of found teams
+def getTeamsInQuery(query):
+    teamList = list()
+    #is the input a valid abbreviation for a team
+    for abbrev in getAllTeamAbbrevs():
+        if abbrev[0] in query:
+            teamList.append(getTeamIDByAbbrev(abbrev[0]))
+    #is the input a valid name for a team
+    for name in getAllTeamNames():
+        if name[0] in query:
+            teamList.append(getTeamIDByName(name[0]))
+    #is the input a tranformed name for a team
+    index = 0
+    for team in splitTeamNames():
+        for part in team:
+            if part in query:
+                #if a part of a team name is in the query, get the index of the team in validInputForTeams and add the team at this index in allTeams to the list
+                teamList.append(getTeamIDByName(getAllTeamNames[index][0]) 
+        index += 1
+    return teamList
