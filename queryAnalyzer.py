@@ -135,7 +135,7 @@ def getLeaguesInQuery(query):
                     leagueList.append(getLeagueIDByName(name[0]))
     #checks if there is country information for the league in the query (e.g. "deutsche Liga")             
     for foundCountry in getCountryListInQuery(query):
-        leagueList.append(getCountryIDByName(foundCountry))
+        leagueList.append(getCountryIDByName(foundCountry[0]))
     return leagueList
 
 
@@ -148,6 +148,8 @@ def getAllTeamNames():
     c = conn.cursor()
     c.execute('SELECT team_long_name FROM team')
     teamNames = c.fetchall()
+    for i in range(0, len(teamNames)):
+        teamNames[i] = teamNames[i][0]
     conn.close()
     return teamNames
 
@@ -165,21 +167,24 @@ def splitTeamNames():
     validInputForTeams = list()
     #first split all team names
     teamNamesSplitted = list()
-    for team in getAllTeamNames():
+    teamNames = getAllTeamNames()
+    for team in teamNames:
         teamNamesSplitted.append(team.split())
     #only allow input that makes sense 
-    for team in getAllTeamNames():
+    for team in teamNames:
         #remove not neccessary abbrevs
         i = 0
         for part in teamNamesSplitted:
             if len(part) > 3:
-                validInputForTeams[i].append(part)
+            #    validInputForTeams[i].append(part)
+              validInputForTeams.append(part)
             i += 1
         #dont split if it would cause ambiguity
         j = 0
         for part in teamNamesSplitted:
-            if checkDublicates(getAllTeamNames(), part):
-                validInputForTeams[j].append(part)
+            if checkDublicates(teamNames, part):
+                #validInputForTeams[j].append(part)
+                validInputForTeams.append(part)
             j += 1
     return validInputForTeams    
 
@@ -204,7 +209,7 @@ def getTeamIDByName(name):
     c.execute(queryText)
     teamID = c.fetchall()
     conn.close()
-    return teamID[0][0]
+    return teamID
 
 def getTeamIDByAbbrev(teamAbbrev):
     import sqlite3
@@ -219,21 +224,22 @@ def getTeamIDByAbbrev(teamAbbrev):
 
 #returns a list with IDs of found teams
 def getTeamsInQuery(query):
+    allTeamNames = getAllTeamNames()
     teamList = list()
     #is the input a valid abbreviation for a team
     for abbrev in getAllTeamAbbrevs():
         if abbrev[0] in query:
             teamList.append(getTeamIDByAbbrev(abbrev[0]))
     #is the input a valid name for a team
-    for name in getAllTeamNames():
+    for name in allTeamNames:
         if name[0] in query:
             teamList.append(getTeamIDByName(name[0]))
     #is the input a tranformed name for a team
-    index = 0
-    for team in splitTeamNames():
-        for part in team:
-            if part in query:
-                #if a part of a team name is in the query, get the index of the team in validInputForTeams and add the team at this index in allTeams to the list
-                teamList.append(getTeamIDByName(getAllTeamNames[index][0]) 
-        index += 1
+    #index = 0
+    #for team in splitTeamNames():
+    #    for part in team:
+    #       if part in query:
+    #            #if a part of a team name is in the query, get the index of the team in validInputForTeams and add the team at this index in allTeams to the list
+    #            teamList.append(getTeamIDByName(allTeamNames[index]))
+    #    index +=1 
     return teamList
