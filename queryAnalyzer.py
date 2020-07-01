@@ -1,3 +1,6 @@
+
+
+
 #search for players##################################################################################
 
 def getAllPlayerNames():
@@ -209,7 +212,7 @@ def getTeamIDByName(name):
     c.execute(queryText)
     teamID = c.fetchall()
     conn.close()
-    return teamID
+    return teamID[0][0]
 
 def getTeamIDByAbbrev(teamAbbrev):
     import sqlite3
@@ -232,8 +235,8 @@ def getTeamsInQuery(query):
             teamList.append(getTeamIDByAbbrev(abbrev[0]))
     #is the input a valid name for a team
     for name in allTeamNames:
-        if name[0] in query:
-            teamList.append(getTeamIDByName(name[0]))
+        if name in query:
+            teamList.append(getTeamIDByName(name))
     #is the input a tranformed name for a team
     #index = 0
     #for team in splitTeamNames():
