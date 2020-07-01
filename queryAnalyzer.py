@@ -1,6 +1,3 @@
-
-
-
 #search for players##################################################################################
 
 def getAllPlayerNames():
@@ -154,6 +151,8 @@ def getAllTeamNames():
     for i in range(0, len(teamNames)):
         teamNames[i] = teamNames[i][0]
     conn.close()
+    #remove dublicate entries
+    teamNames = list(set(teamNames))
     return teamNames
 
 def getAllTeamAbbrevs():
@@ -166,42 +165,47 @@ def getAllTeamAbbrevs():
     conn.close()
     return teamAbbrevs
 
+#split the team names to find e.g. "Bayern" instead of "FC Bayern Munich"
 def splitTeamNames():
-    validInputForTeams = list()
     #first split all team names
     teamNamesSplitted = list()
     teamNames = getAllTeamNames()
     for team in teamNames:
         teamNamesSplitted.append(team.split())
-    #only allow input that makes sense 
-    for team in teamNames:
-        #remove not neccessary abbrevs
-        i = 0
-        for part in teamNamesSplitted:
-            if len(part) > 3:
-            #    validInputForTeams[i].append(part)
-              validInputForTeams.append(part)
-            i += 1
-        #dont split if it would cause ambiguity
-        j = 0
-        for part in teamNamesSplitted:
-            if checkDublicates(teamNames, part):
-                #validInputForTeams[j].append(part)
-                validInputForTeams.append(part)
-            j += 1
-    return validInputForTeams    
+    #remove abbrevs and numbers
+    for i in range(len(teamNamesSplitted)):
+        #print(teamNamesSplitted[i])
+        for part in teamNamesSplitted[i]:
+            if len(part) < 4:
+                teamNamesSplitted[i].remove(part)
+    #remove dublicates
+    for i in range(len(teamNamesSplitted)):
+        for part in teamNamesSplitted[i]:
+            if isDublicate(teamNamesSplitted, part) == True:
+                mergeElement(teamNamesSplitted, part)
+    return teamNamesSplitted   
 
 #check if there are teams that include the same names (e.g. "Manchester United" and "Manchester City")
-def checkDublicates(teamList, part):
+def isDublicate(teamList, checkElement):
     count = 0
     for team in teamList:
         for element in team:
-            if element == part:
+            if element == checkElement:
                 count += 1
     if count < 2:
-        return True
-    else:
         return False
+    else:
+        return True
+
+#merge e.g. "[Manchester, United]" to "[Manchester United]" to prevent ambiguity (with "Manchester City")
+def mergeElement(completeList, dublicateElement):
+    for i in range(len(completeList)):
+        for j in range(len(completeList[i])):
+            if completeList[i][j] == dublicateElement:
+                if j+1 == len(completeList[i]):
+                    completeList[i][j] = completeList[i][j-1] + " " + dublicateElement
+                else:
+                    completeList[i][j] = dublicateElement + " " + completeList[i][j+1]  
 
 def getTeamIDByName(name):
     import sqlite3
@@ -226,23 +230,28 @@ def getTeamIDByAbbrev(teamAbbrev):
     return teamID[0][0]
 
 #returns a list with IDs of found teams
-def getTeamsInQuery(query):
-    allTeamNames = getAllTeamNames()
+def getTeams(query):
+    import re
     teamList = list()
     #is the input a valid abbreviation for a team
-    for abbrev in getAllTeamAbbrevs():
+    allTeamAbbrevs = getAllTeamAbbrevs()
+    for abbrev in allTeamAbbrevs:
         if abbrev[0] in query:
-            teamList.append(getTeamIDByAbbrev(abbrev[0]))
+            if isDublicate(allTeamAbbrevs, abbrev[0]) == False:
+                teamList.append(getTeamIDByAbbrev(abbrev[0]))
+            #else: Ausgabe: Definieren genauer, es gibt mehrere Teams mit dieser Abkürzung
     #is the input a valid name for a team
+    allTeamNames = getAllTeamNames()
     for name in allTeamNames:
         if name in query:
             teamList.append(getTeamIDByName(name))
-    #is the input a tranformed name for a team
-    #index = 0
-    #for team in splitTeamNames():
-    #    for part in team:
-    #       if part in query:
-    #            #if a part of a team name is in the query, get the index of the team in validInputForTeams and add the team at this index in allTeams to the list
-    #            teamList.append(getTeamIDByName(allTeamNames[index]))
-    #    index +=1 
+    #is the input a valid tranformed name for a team
+    splittedTeamNames = splitTeamNames()
+    for i in range(len(splittedTeamNames)):
+        for part in splittedTeamNames[i]:
+            #make sure the part is detached
+            searchString = " "+part+"( |\W)"
+            if re.search(searchString, query):
+                teamList.append(getTeamIDByName(allTeamNames[i]))
+    teamList = list(set(teamList))
     return teamList
