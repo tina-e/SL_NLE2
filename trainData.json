@@ -4,5 +4,9 @@
 	"1": ["Wie schwer ist SPIELER?", "Wie viel wiegt SPIELER?"
           , "Wie viel bringt SPIELER auf die Waage?"],
 	"2": ["Was ist der präferierte Fuß von SPIELER?", "Mit welchem Fuß trifft SPIELER am besten?"
-          , "Spielt SPIELER eher mit rechts oder links?"]
+          , "Spielt SPIELER eher mit rechts oder links?"],
+	"3": ["In welchem Verein spielt SPIELER?", "Wo spielt SPIELER?"
+          , "Was ist der Heimverein von SPIELER?", "Wo steht SPIELER unter Vertrag?"],
+	"4": ["In welchem Verein spielt SPIELER SAISON?", "Wo spielt SAISON SPIELER?"
+          , "Was ist der Heimverein von SPIELER?", "Wo steht SPIELER SAISON unter Vertrag?"]
 }
