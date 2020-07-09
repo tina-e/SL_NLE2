@@ -1,6 +1,6 @@
 {
     "0": ["Wann wurde SPIELER geboren?", "Wann hat SPIELER Geburtstag?"
-          , "Wie alt ist SPIELER?"],
+          , "Wie alt ist SPIELER?", "Was ist das Geburtsdatum von SPIELER"],
 	"1": ["Wie schwer ist SPIELER?", "Wie viel wiegt SPIELER?"
           , "Wie viel bringt SPIELER auf die Waage?"],
 	"2": ["Was ist der präferierte Fuß von SPIELER?", "Mit welchem Fuß trifft SPIELER am besten?"

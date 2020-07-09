@@ -32,10 +32,17 @@ def getPlayerIDByName(name):
 #Returns list with names of found players
 def getPlayersInQuery(query):
     playerList = list()
+    replace = "SPIELER"
     for name in getAllPlayerNames():
         if  name[0].find(" ") > -1 and name[0] in query or getReverseName(name[0]) in query:
             playerList.append(getPlayerIDByName(name[0]))
-    return playerList
+            if(name[0] in query):
+                index = query.find(name[0])
+                query = query[0:index]+ replace + query[index+len(name[0]):len(query)]
+            else:
+                index = query.find(getReverseName(name[0]))
+                query = query[0:index]+ replace + query[index+len(name[0]):len(query)]
+    return [playerList, query]
 
 
 #search for leagues##################################################################################
@@ -255,3 +262,68 @@ def getTeams(query):
                 teamList.append(getTeamIDByName(allTeamNames[i]))
     teamList = list(set(teamList))
     return teamList
+    
+    
+#search for seasons##################################################################################
+
+def getAllSeasons():
+    import sqlite3
+    sqlite_file = 'database.sqlite'
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+    c.execute('SELECT season FROM match')
+    seasons = c.fetchall()
+    allSeasons = list()
+    for i in range(0, len(seasons)):
+        if seasons[i][0] not in allSeasons:
+            allSeasons.append(seasons[i][0]) 
+    conn.close()
+    return allSeasons
+
+def getAllSeasonAbbrevs():
+    abbrevList = list()
+    allSeasons = getAllSeasons()
+    for season in allSeasons:
+        season = season[1:]
+        season = season[1:]
+        season = season[0:4: ] + season[5: : ]
+        season = season[0:3: ] + season[4: : ]
+        abbrevList.append(season)
+    return abbrevList
+
+def getSeasonByAbbrev(abbrev):
+    allSeasons = getAllSeasons()
+    allAbbrevs = getAllSeasonAbbrevs()
+    for element in allAbbrevs:
+        if abbrev == element:
+            index = allAbbrevs.index(element)
+            return allSeasons[index]
+
+def getSeasons(query):
+    seasonList = list()
+    allSeasons = getAllSeasons()
+    for season in allSeasons:
+        if season in query:
+            seasonList.append(season)
+    allAbbrevs = getAllSeasonAbbrevs()
+    for abbrev in allAbbrevs:
+        if abbrev in query:
+            seasonList.append(getSeasonByAbbrev(abbrev))
+    return seasonList
+
+
+#search for stages##################################################################################
+
+def getStages(query):
+    import re
+    stageList = list()
+    searchString = "\d+\.?\s?Spieltag"
+    matchObject = re.findall(searchString, query)
+    for match in matchObject:
+        stageString = ""
+        for element in match:
+            if element != "." and element != "S" and element != " ":
+                stageString = stageString + element
+            else: break
+        stageList.append(stageString)
+    return stageList

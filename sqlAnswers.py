@@ -68,13 +68,13 @@ def getAnswers():
     #query objects are the "refined queries" which contain arrays with the occurring id of Player/League/Team/Season
 
     answers = []
-    answers.append([1,0,0,0, getBirthday])
-    answers.append([1,0,0,0, getWeight])
-    answers.append([1,0,0,0, getPreferredFoot])
-    answers.append([1,0,0,0, getTeamOfPlayer])
-    answers.append([1,0,0,1, getTeamOfPlayerInSeason])
-    answers.append([0,0,2,0, getTeamVSTeamStats])
-    answers.append([0,0,2,1, getTeamVSTeamStats])
+    answers.append([1,0,0,0,0, getBirthday])
+    answers.append([1,0,0,0,0, getWeight])
+    answers.append([1,0,0,0,0, getPreferredFoot])
+    answers.append([1,0,0,0,0, getTeamOfPlayer])
+    answers.append([1,0,0,1,0, getTeamOfPlayerInSeason])
+    answers.append([0,0,2,0,0, getTeamVSTeamStats])
+    answers.append([0,0,2,1,0, getTeamVSTeamStats])
     return answers
 
 
