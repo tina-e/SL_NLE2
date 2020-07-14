@@ -17,6 +17,34 @@ def getReverseName(name):
         return name[x+1:] + " "+ name[:x]
     return "XXX"
 
+def getLastNames():
+    import re
+    #first split all team names
+    lastNames = list()
+    names = getAllPlayerNames()
+    for name in names:
+        wholeName = name[0]
+        lastName = wholeName
+        if " " in wholeName:
+            lastName = re.sub('\w+ ', '', wholeName, 1)
+            lastName = re.sub(',.*$', '', lastName)
+        lastNames.append(lastName)
+    #remove dublicates
+    for name in lastNames:
+        if lastNames.count(name) > 1:
+            lastNames = replaceDublicates(lastNames, name)
+    return lastNames 
+
+#remove dublicate names and mark them with content "DUBLICATES"
+def replaceDublicates(nameList, checkElement):
+    result = list()
+    for name in nameList:
+        if name == checkElement:
+            result.append("DUBLICATE")
+        else:
+            result.append(name)
+    return result
+
 #returns the database id of the player by name
 def getPlayerIDByName(name):
     import sqlite3
@@ -31,10 +59,16 @@ def getPlayerIDByName(name):
 
 #Returns list with names of found players
 def getPlayersInQuery(query):
+    import re
     playerList = list()
     replace = "SPIELER"
-    for name in getAllPlayerNames():
-        if  name[0].find(" ") > -1 and name[0] in query or getReverseName(name[0]) in query:
+    allPlayerNames = getAllPlayerNames()
+    for name in allPlayerNames:
+        seperateNameString = "( |\W)"+name[0]+"( |\W)"
+        if re.match(seperateNameString, query) or query.endswith(name[0]) or query.startswith(name[0]):
+            playerList.append(getPlayerIDByName(name[0]))
+            query = query.replace(name[0], replace)
+        if name[0].find(" ") > -1 and name[0] in query or getReverseName(name[0]) in query:
             playerList.append(getPlayerIDByName(name[0]))
             if(name[0] in query):
                 index = query.find(name[0])
@@ -42,6 +76,12 @@ def getPlayersInQuery(query):
             else:
                 index = query.find(getReverseName(name[0]))
                 query = query[0:index]+ replace + query[index+len(name[0]):len(query)]
+    #user input only includes players' last name
+    lastNames = getLastNames()
+    for i in range(len(lastNames)):
+        if lastNames[i] in query:
+            playerList.append(getPlayerIDByName(allPlayerNames[i][0]))
+            query = query.replace(lastNames[i], replace)
     return [playerList, query]
 
 
@@ -246,7 +286,7 @@ def getTeamIDByAbbrev(teamAbbrev):
     return teamID[0][0]
 
 #returns a list with IDs of found teams
-def getTeams(query):
+def getTeamsInQuery(query):
     import re
     teamList = list()
     replace = "TEAM"
@@ -275,7 +315,7 @@ def getTeams(query):
                 matchedString = matchedObject.group(0)[1:][:-1]
                 query = query.replace(matchedString, replace)
                 teamList.append(getTeamIDByName(allTeamNames[i]))
-    teamList = list(set(teamList))
+    #teamList = list(set(teamList))
     return [teamList, query]
     
     
@@ -314,7 +354,7 @@ def getSeasonByAbbrev(abbrev):
             index = allAbbrevs.index(element)
             return allSeasons[index]
 
-def getSeasons(query):
+def getSeasonsInQuery(query):
     seasonList = list()
     replace = "SEASON"
     allSeasons = getAllSeasons()
@@ -332,7 +372,7 @@ def getSeasons(query):
 
 #search for stages##################################################################################
 
-def getStages(query):
+def getStagesInQuery(query):
     import re
     stageList = list()
     replace = "STAGE"
