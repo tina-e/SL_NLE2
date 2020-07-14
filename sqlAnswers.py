@@ -65,7 +65,7 @@ def getTeamVSTeamStats(query):
     
 def getAnswers():
 
-    #query objects are the "refined queries" which contain arrays with the occurring id of Player/League/Team/Season
+    #query objects are the "refined queries" which contain arrays with the occurring id of Player/League/Team/Season/Year
 
     answers = []
     answers.append([1,0,0,0,0, getBirthday])
