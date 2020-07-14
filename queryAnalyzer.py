@@ -32,13 +32,20 @@ def getPlayerIDByName(name):
 #Returns list with names of found players
 def getPlayersInQuery(query):
     playerList = list()
+    replace = "SPIELER"
     for name in getAllPlayerNames():
         if  name[0].find(" ") > -1 and name[0] in query or getReverseName(name[0]) in query:
             playerList.append(getPlayerIDByName(name[0]))
-    return playerList
+            if(name[0] in query):
+                index = query.find(name[0])
+                query = query[0:index]+ replace + query[index+len(name[0]):len(query)]
+            else:
+                index = query.find(getReverseName(name[0]))
+                query = query[0:index]+ replace + query[index+len(name[0]):len(query)]
+    return [playerList, query]
 
 
-#search for leagues##################################################################################
+#search for countries##################################################################################
 
 def getAllCountries():
     import sqlite3
@@ -51,7 +58,7 @@ def getAllCountries():
     return countryNames
 
 def getRegExForCountries():
-    regExCountryList = ['belgi(an|sch|en)', 'engl(and|(is(ch|h)))', 'fran(ce|zoesisch|kreich)', '(deutsch|german)', 'ital(ienisch|ian|ien|y)', '(holla(endisch|nd)|niederla(endisch|nd)|dutch|netherland)', 'pol(nisch|ish|en|and)', 'portug(iesisch|uese|al)', '(scot(tish|land)|schott(lae?nd)?isch)', 'spa(nisch|in|nien)', '(schweiz((er(isch)?)?)|swiss|switzerland)']
+    regExCountryList = ['belgi(an|sche?|en)', 'engl(and|(is(ch|h)e?))', 'fran(ce|zoesische?|kreich)', '(deutsche?|german)', 'ital(ienische?|ian|ien|y)', '(holla(endische?|nd)|niederla(endische?|nd)|dutch|netherland)', 'pol(nische?|ish|en|and)', 'portug(iesische?|uese|al)', '(scot(tish|land)|schott(lae?nd)?ische?)', 'spa(nische?|in|nien)', '(schweiz((er(ische?)?)?)|swiss|switzerland)']
     return regExCountryList
 
 #return the database id of the country by name
@@ -70,11 +77,15 @@ def getCountryIDByName(name):
 def getCountryListInQuery(query):
     import re
     foundCountryList = list()
+    replace = "COUNTRY"
     for regEx in getRegExForCountries():
-        #if re.search(regEx + " (League|Liga)", query):
-        if re.search(regEx, query, re.IGNORECASE):
+        combinedRegEx = regEx + " (League|Liga)"
+        matchObject = re.search(combinedRegEx, query, re.IGNORECASE)
+        if matchObject:
+            matchedString = matchObject.group(0)
+            query = query.replace(matchedString, replace)
             foundCountryList.append(getAllCountries()[getRegExForCountries().index(regEx)])
-    return foundCountryList
+    return [foundCountryList, query]
 
 
 #search for leagues##################################################################################
@@ -126,17 +137,22 @@ def getLeagueIDByName(name):
 #returns a list with IDs of found leagues
 def getLeaguesInQuery(query):
     leagueList = list()
+    replace = "LEAGUE"
     for name in getAllLeagues():
         if name[0] in query:
+            query = query.replace(name[0], replace)
             leagueList.append(getLeagueIDByName(name[0]))
         else:
             for part in getLeagueNameParts(name[0]):
                 if part in query:
+                    query = query.replace(part, replace)
                     leagueList.append(getLeagueIDByName(name[0]))
-    #checks if there is country information for the league in the query (e.g. "deutsche Liga")             
-    for foundCountry in getCountryListInQuery(query):
+    #checks if there is country information for the league in the query (e.g. "deutsche Liga")
+    countryList = getCountryListInQuery(query)[0]
+    query = getCountryListInQuery(query)[1]
+    for foundCountry in countryList:
         leagueList.append(getCountryIDByName(foundCountry[0]))
-    return leagueList
+    return [leagueList, query]
 
 
 #search for teams##################################################################################
@@ -233,17 +249,20 @@ def getTeamIDByAbbrev(teamAbbrev):
 def getTeams(query):
     import re
     teamList = list()
+    replace = "TEAM"
     #is the input a valid abbreviation for a team
     allTeamAbbrevs = getAllTeamAbbrevs()
     for abbrev in allTeamAbbrevs:
         if abbrev[0] in query:
             if isDublicate(allTeamAbbrevs, abbrev[0]) == False:
+                query = query.replace(abbrev[0], replace)
                 teamList.append(getTeamIDByAbbrev(abbrev[0]))
             #else: Ausgabe: Definieren genauer, es gibt mehrere Teams mit dieser Abkürzung
     #is the input a valid name for a team
     allTeamNames = getAllTeamNames()
     for name in allTeamNames:
         if name in query:
+            query = query.replace(name, replace)
             teamList.append(getTeamIDByName(name))
     #is the input a valid tranformed name for a team
     splittedTeamNames = splitTeamNames()
@@ -251,12 +270,15 @@ def getTeams(query):
         for part in splittedTeamNames[i]:
             #make sure the part is detached
             searchString = " "+part+"( |\W)"
-            if re.search(searchString, query):
+            matchedObject = re.search(searchString, query)
+            if matchedObject:
+                matchedString = matchedObject.group(0)[1:][:-1]
+                query = query.replace(matchedString, replace)
                 teamList.append(getTeamIDByName(allTeamNames[i]))
     teamList = list(set(teamList))
-    return teamList
-
-
+    return [teamList, query]
+    
+    
 #search for seasons##################################################################################
 
 def getAllSeasons():
@@ -294,15 +316,18 @@ def getSeasonByAbbrev(abbrev):
 
 def getSeasons(query):
     seasonList = list()
+    replace = "SEASON"
     allSeasons = getAllSeasons()
     for season in allSeasons:
         if season in query:
+            query = query.replace(season, replace)
             seasonList.append(season)
     allAbbrevs = getAllSeasonAbbrevs()
     for abbrev in allAbbrevs:
         if abbrev in query:
+            query = query.replace(abbrev, replace)
             seasonList.append(getSeasonByAbbrev(abbrev))
-    return seasonList
+    return [seasonList, query]
 
 
 #search for stages##################################################################################
@@ -310,13 +335,15 @@ def getSeasons(query):
 def getStages(query):
     import re
     stageList = list()
+    replace = "STAGE"
     searchString = "\d+\.?\s?Spieltag"
     matchObject = re.findall(searchString, query)
     for match in matchObject:
+        query = query.replace(match, replace)
         stageString = ""
         for element in match:
             if element != "." and element != "S" and element != " ":
                 stageString = stageString + element
             else: break
         stageList.append(stageString)
-    return stageList
+    return [stageList, query]
