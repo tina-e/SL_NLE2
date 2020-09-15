@@ -34,9 +34,9 @@ def getHeight(query):
     queryText = 'SELECT height FROM player WHERE id = '+str(query[0][0])
     c.execute(queryText)
     height = c.fetchall()[0]
-    print("height:" + height)
+    print("height:" + str(height[0]))
     conn.close()
-    return "Die Person ist " + str(height) + "cm groß."
+    return "Die Person ist " + str(height[0]) + "cm groß."
 
 
 #returns answer if user asks for player's preferred foot
@@ -257,14 +257,14 @@ def getAnswers():
     answers.append([1,0,1,0,0, getSeasonsOfPlayerInTeam])
     
     answers.append([0,0,1,0,1, getStageStatsOfTeam])
-    answers.append([0,0,1,1,1, getStageStatsOfTeam])
+    answers.append([0,0,1,1,1, getStageStatsOfTeam]) #10 -> muss auf Training Data 8 Zeigen
     
-    answers.append([0,0,1,1,1, getRival])
+    answers.append([0,0,1,1,1, getRival]) #11
     
-    answers.append([0,0,1,1,1, getLineup])
+    answers.append([0,0,1,1,1, getLineup]) #12
     answers.append([0,0,1,0,1, getLineup])
     
-    answers.append([0,0,1,1,1, getWasHomeTeam])
+    answers.append([0,0,1,1,1, getWasHomeTeam]) # 14
     answers.append([0,0,1,0,1, getWasHomeTeam])
     
     answers.append([0,0,1,0,0, getNumWin])
