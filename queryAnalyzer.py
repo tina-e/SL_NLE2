@@ -65,7 +65,13 @@ def getPlayersInQuery(query):
     allPlayerNames = getAllPlayerNames()
     for name in allPlayerNames:
         seperateNameString = "( |\W)"+name[0]+"( |\W)"
+<<<<<<< HEAD
         if re.match(seperateNameString, query) or query.endswith(name[0]) or query.startswith(name[0]):
+=======
+        endNameString = "( |\W)"+name[0]
+        startNameString = name[0]+"( |\W)"
+        if re.match(seperateNameString, query) or query.endswith(endNameString) or query.startswith(startNameString):
+>>>>>>> leagues
             playerList.append(getPlayerIDByName(name[0]))
             query = query.replace(name[0], replace)
         if name[0].find(" ") > -1 and name[0] in query or getReverseName(name[0]) in query:
