@@ -65,13 +65,11 @@ def getPlayersInQuery(query):
     allPlayerNames = getAllPlayerNames()
     for name in allPlayerNames:
         seperateNameString = "( |\W)"+name[0]+"( |\W)"
-#<<<<<<< HEAD
-#        if re.match(seperateNameString, query) or query.endswith(name[0]) or query.startswith(name[0]):
-#=======
+
         endNameString = "( |\W)"+name[0]
         startNameString = name[0]+"( |\W)"
         if re.match(seperateNameString, query) or query.endswith(endNameString) or query.startswith(startNameString):
-#>>>>>>> leagues
+
             playerList.append(getPlayerIDByName(name[0]))
             query = query.replace(name[0], replace)
         if name[0].find(" ") > -1 and name[0] in query or getReverseName(name[0]) in query:
@@ -89,6 +87,7 @@ def getPlayersInQuery(query):
             playerList.append(getPlayerIDByName(allPlayerNames[i][0]))
             query = query.replace(lastNames[i], replace)
     return [playerList, query]
+
 
 
 #search for countries##################################################################################
@@ -243,12 +242,12 @@ def splitTeamNames():
     #remove dublicates
     for i in range(len(teamNamesSplitted)):
         for part in teamNamesSplitted[i]:
-            if isDublicate(teamNamesSplitted, part) == True:
+            if isDuplicate(teamNamesSplitted, part) == True:
                 mergeElement(teamNamesSplitted, part)
     return teamNamesSplitted   
 
 #check if there are teams that include the same names (e.g. "Manchester United" and "Manchester City")
-def isDublicate(teamList, checkElement):
+def isDuplicate(teamList, checkElement):
     count = 0
     for team in teamList:
         for element in team:
@@ -300,7 +299,7 @@ def getTeamsInQuery(query):
     allTeamAbbrevs = getAllTeamAbbrevs()
     for abbrev in allTeamAbbrevs:
         if abbrev[0] in query:
-            if isDublicate(allTeamAbbrevs, abbrev[0]) == False:
+            if isDuplicate(allTeamAbbrevs, abbrev[0]) == False:
                 query = query.replace(abbrev[0], replace)
                 teamList.append(getTeamIDByAbbrev(abbrev[0]))
             #else: Ausgabe: Definieren genauer, es gibt mehrere Teams mit dieser Abkürzung
@@ -370,6 +369,9 @@ def getSeasonsInQuery(query):
             seasonList.append(season)
     allAbbrevs = getAllSeasonAbbrevs()
     for abbrev in allAbbrevs:
+        if "20"+abbrev in query:
+            query = query.replace("20"+abbrev, replace)
+            seasonList.append(getSeasonByAbbrev(abbrev))
         if abbrev in query:
             query = query.replace(abbrev, replace)
             seasonList.append(getSeasonByAbbrev(abbrev))

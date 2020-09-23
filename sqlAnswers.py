@@ -111,7 +111,6 @@ def getTeamVSTeamStats(query):
 
 #returns answer if user asks for team-stats of stage
 def getStageStatsOfTeam(query):
-    print("getStageStatsOfTeam")
     team = getTeamApiIDByID(query[2][0])
     stage = query[4][0]
     stage_string = 'stage = "' + stage + '"'
@@ -159,7 +158,8 @@ def getLineup(query):
     season_string = 'season = "' + season + '"'
     
     lineup = getLineupByTeamApiID(team, season_string, stage_string)
-    return "Die Aufstellung dieses Teams an Spieltag" +stage+ " in Saison " +season+ " war wie folgt: " +lineup
+    print(lineup)
+    return "Die Aufstellung dieses Teams an Spieltag" +stage+ " in Saison " +season+ " war wie folgt: " +str(lineup)
 
 
 #returns answer if user asks if a team was home-team
@@ -180,7 +180,7 @@ def getWasHomeTeam(query):
         return "Diese Mannschaft spielte zum angegeben Spieltag auswärts."
  
 
-#returns answer if user asks for win/lose-stats
+#returns answer if user asks for win/Defeat-stats
 #all wins ever
 def getNumWin(query):
     team = getTeamApiIDByID(query[2][0])
@@ -188,7 +188,7 @@ def getNumWin(query):
     return "Diese Mannschaft hat " +str(num)+ "-mal gewonnen."
 
 #all failures ever   
-def getNumLose(query):
+def getNumDefeat(query):
     team = getTeamApiIDByID(query[2][0])
     num = getNumWinByTeamApiID(team, -1, False, '')
     return "Diese Mannschaft hat " +str(num)+ "-mal verloren."
@@ -201,7 +201,7 @@ def getNumWinInSeason(query):
     return "Diese Mannschaft hat in Saison " +str(query[3][0])+ " " +str(num)+ "-mal gewonnen."
 
 #all failures of season    
-def getNumLoseInSeason(query):
+def getNumDefeatInSeason(query):
     team = getTeamApiIDByID(query[2][0])
     season_string = 'season = "' + query[3][0] + '"'
     num = getNumWinByTeamApiID(team, -1, False, season_string)
@@ -215,7 +215,7 @@ def getNumWinAgainstTeam(query):
     return "Mannschaft " +getTeamNameByAPIID(team1)+" hat " +str(num)+ "-mal gegen " +getTeamNameByAPIID(team2)+ " gewonnen."
     
 #all failures against team ever    
-def getNumLoseAgainstTeam(query):
+def getNumDefeatAgainstTeam(query):
     team1 = getTeamApiIDByID(query[2][0])
     team2 = getTeamApiIDByID(query[2][1])
     num = getNumWinByTeamApiID(team1, team2, False, '')
@@ -230,7 +230,7 @@ def getNumWinAgainstTeamInSeason(query):
     return "Mannschaft " +getTeamNameByAPIID(team1)+" hat in Saison " +str(query[3][0])+ " " +str(num)+ "-mal gegen " +getTeamNameByAPIID(team2)+ " gewonnen."
     
 #all failures against team of season   
-def getNumLoseAgainstTeamInSeason(query):
+def getNumDefeatAgainstTeamInSeason(query):
     team1 = getTeamApiIDByID(query[2][0])
     team2 = getTeamApiIDByID(query[2][1])
     season_string = 'season = "' + query[3][0] + '"'
@@ -245,39 +245,39 @@ def getAnswers():
 
 
     answers = []
-    answers.append([1,0,0,0,0, getBirthday])
-    answers.append([1,0,0,0,0, getWeight])
+    answers.append([1,0,0,0,0, getBirthday, 0])
+    answers.append([1,0,0,0,0, getWeight, 1])
 
-    answers.append([1,0,0,0,0, getHeight])
-    answers.append([1,0,0,0,0, getPreferredFoot])
-    answers.append([1,0,0,0,0, getTeamOfPlayer])
-    answers.append([1,0,0,1,0, getTeamOfPlayerInSeason])
+    answers.append([1,0,0,0,0, getHeight, 6])
+    answers.append([1,0,0,0,0, getPreferredFoot, 2])
+    answers.append([1,0,0,0,0, getTeamOfPlayer, 3])
+    answers.append([1,0,0,1,0, getTeamOfPlayerInSeason, 4])
     
     answers.append([0,0,2,0,0, getTeamVSTeamStats])
     answers.append([0,0,2,1,0, getTeamVSTeamStats])
         
-    answers.append([1,0,1,0,0, getSeasonsOfPlayerInTeam])
+    answers.append([1,0,1,0,0, getSeasonsOfPlayerInTeam, 5])
     
-    answers.append([0,0,1,0,1, getStageStatsOfTeam])
-    answers.append([0,0,1,1,1, getStageStatsOfTeam]) #10 -> muss auf Training Data 8 Zeigen
+    answers.append([0,0,1,0,1, getStageStatsOfTeam, 16])
+    answers.append([0,0,1,1,1, getStageStatsOfTeam, 7]) 
     
-    answers.append([0,0,1,1,1, getRival]) #11
+    answers.append([0,0,1,1,1, getRival, 8])
     
-    answers.append([0,0,1,1,1, getLineup]) #12
-    answers.append([0,0,1,0,1, getLineup])
+    answers.append([0,0,1,1,1, getLineup, 17]) 
+    answers.append([0,0,1,0,1, getLineup, 9])
     
-    answers.append([0,0,1,1,1, getWasHomeTeam]) # 14
-    answers.append([0,0,1,0,1, getWasHomeTeam])
+    answers.append([0,0,1,1,1, getWasHomeTeam, 11]) 
+    answers.append([0,0,1,0,1, getWasHomeTeam, 11])
     
-    answers.append([0,0,1,0,0, getNumWin])
-    answers.append([0,0,1,0,0, getNumLose])
-    answers.append([0,0,2,0,0, getNumWinAgainstTeam])
-    answers.append([0,0,2,0,0, getNumWinAgainstTeam])
+    answers.append([0,0,1,0,0, getNumWin, 10]) #TODO benötigt aufteilen
+    answers.append([0,0,1,0,0, getNumDefeat, 12])#TODO benötigt aufteilen
+    answers.append([0,0,2,0,0, getNumWinAgainstTeam, 12])#TODO
+    answers.append([0,0,2,0,0, getNumWinAgainstTeam, 12]) #TODO
     
-    answers.append([0,0,1,1,0, getNumWinInSeason])
-    answers.append([0,0,1,1,0, getNumLoseInSeason])
-    answers.append([0,0,2,1,0, getNumWinAgainstTeamInSeason])
-    answers.append([0,0,2,1,0, getNumLoseAgainstTeamInSeason])
+    answers.append([0,0,1,1,0, getNumWinInSeason, 10])#TODO
+    answers.append([0,0,1,1,0, getNumDefeatInSeason, 12])#TODO
+    answers.append([0,0,2,1,0, getNumWinAgainstTeamInSeason, 0]) #TODO
+    answers.append([0,0,2,1,0, getNumDefeatAgainstTeamInSeason, 12])
     
     return answers
 
@@ -417,7 +417,7 @@ def getNumWinByTeamApiID(team_api_id, team2_api_id, isAskedForWin, season):
         where_team_string1 = '(home_team_api_id = ' +str(team_api_id)+ ' AND away_team_api_id = ' +str(team2_api_id)+ ')' 
         where_team_string2 = '(away_team_api_id = ' +str(team_api_id)+ ' AND home_team_api_id = ' +str(team2_api_id)+ ')' 
 
-    #has user asked for win (if) or lose (else) stats?
+    #has user asked for win (if) or Defeat (else) stats?
     if isAskedForWin:
         where_string = '(' +where_team_string1+ ' AND home_team_goal > away_team_goal) OR (' +where_team_string2+ ' AND away_team_goal > home_team_goal)'
     else:
