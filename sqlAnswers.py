@@ -185,13 +185,13 @@ def getWasHomeTeam(query):
 def getNumWin(query):
     team = getTeamApiIDByID(query[2][0])
     num = getNumWinByTeamApiID(team, -1, True, '')
-    return "Diese Mannschaft hat " +str(num)+ "-mal gewonnen."
+    return "Diese Mannschaft hat in den gesamten Aufzeichnungen " +str(num)+ "-mal gewonnen."
 
 #all failures ever   
 def getNumDefeat(query):
     team = getTeamApiIDByID(query[2][0])
     num = getNumWinByTeamApiID(team, -1, False, '')
-    return "Diese Mannschaft hat " +str(num)+ "-mal verloren."
+    return "Diese Mannschaft hat in den gesamten Aufzeichnungen " +str(num)+ "-mal verloren."
     
 #all wins of season  
 def getNumWinInSeason(query):
@@ -267,16 +267,16 @@ def getAnswers():
     answers.append([0,0,1,0,1, getLineup, 9])
     
     answers.append([0,0,1,1,1, getWasHomeTeam, 11]) 
-    answers.append([0,0,1,0,1, getWasHomeTeam, 11])
+    answers.append([0,0,1,0,1, getWasHomeTeam, 18])
     
-    answers.append([0,0,1,0,0, getNumWin, 10]) #TODO benötigt aufteilen
-    answers.append([0,0,1,0,0, getNumDefeat, 12])#TODO benötigt aufteilen
-    answers.append([0,0,2,0,0, getNumWinAgainstTeam, 12])#TODO
-    answers.append([0,0,2,0,0, getNumWinAgainstTeam, 12]) #TODO
+    answers.append([0,0,1,0,0, getNumWin, 19])
+    answers.append([0,0,1,0,0, getNumDefeat, 21])
+    answers.append([0,0,2,0,0, getNumWinAgainstTeam, 22])
+    answers.append([0,0,2,0,0, getNumDefeatAgainstTeam, 23])
     
-    answers.append([0,0,1,1,0, getNumWinInSeason, 10])#TODO
-    answers.append([0,0,1,1,0, getNumDefeatInSeason, 12])#TODO
-    answers.append([0,0,2,1,0, getNumWinAgainstTeamInSeason, 0]) #TODO
+    answers.append([0,0,1,1,0, getNumWinInSeason, 10])
+    answers.append([0,0,1,1,0, getNumDefeatInSeason, 20])
+    answers.append([0,0,2,1,0, getNumWinAgainstTeamInSeason, 24])
     answers.append([0,0,2,1,0, getNumDefeatAgainstTeamInSeason, 12])
     
     return answers
