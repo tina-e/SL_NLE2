@@ -8,7 +8,13 @@ def getAllPlayerNames():
     c.execute('SELECT player_name FROM player')
     playerNames = c.fetchall()
     conn.close()
-    return playerNames
+    #make system case insensitive
+    import string
+    playerNamesLower = list()
+    for name in playerNames:
+        name = name[0]
+        playerNamesLower.append(name.lower())
+    return playerNamesLower
 
 #needed to handle "thomas mueller" and "mueller thomas"
 def getReverseName(name):
@@ -23,7 +29,7 @@ def getLastNames():
     lastNames = list()
     names = getAllPlayerNames()
     for name in names:
-        wholeName = name[0]
+        wholeName = name
         lastName = wholeName
         if " " in wholeName:
             lastName = re.sub('\w+ ', '', wholeName, 1)
@@ -47,11 +53,12 @@ def replaceDublicates(nameList, checkElement):
 
 #returns the database id of the player by name
 def getPlayerIDByName(name):
+    print(name)
     import sqlite3
     sqlite_file = 'database.sqlite'
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    queryText = 'SELECT id FROM player WHERE player_name = "'+ str(name)+'"'
+    queryText = 'SELECT id FROM player WHERE lower(player_name) = "'+ str(name)+'"'
     c.execute(queryText)
     playerID = c.fetchall()
     conn.close()
@@ -59,33 +66,39 @@ def getPlayerIDByName(name):
 
 #Returns list with names of found players
 def getPlayersInQuery(query):
-    import re
     playerList = list()
     replace = "SPIELER"
     allPlayerNames = getAllPlayerNames()
     for name in allPlayerNames:
-        seperateNameString = "( |\W)"+name[0]+"( |\W)"
-        endNameString = "( |\W)"+name[0]
-        startNameString = name[0]+"( |\W)"
-        if re.match(seperateNameString, query) or query.endswith(endNameString) or query.startswith(startNameString):
-            playerList.append(getPlayerIDByName(name[0]))
-            query = query.replace(name[0], replace)
-        if name[0].find(" ") > -1 and name[0] in query or getReverseName(name[0]) in query:
-            playerList.append(getPlayerIDByName(name[0]))
-            if(name[0] in query):
-                index = query.find(name[0])
-                query = query[0:index]+ replace + query[index+len(name[0]):len(query)]
-            else:
-                index = query.find(getReverseName(name[0]))
-                query = query[0:index]+ replace + query[index+len(name[0]):len(query)]
+        seperateNameString = '( |\W)'+name+'( |\W)'
+        endNameString = " "+name
+        startNameString = name+" "
+        import re
+        if re.search(seperateNameString, query) or query.endswith(endNameString) or query.startswith(startNameString):
+            playerList.append(getPlayerIDByName(name))
+            query = query.replace(name, replace)
+        #user input pattern: Lastname Firstname instead of Firstname Lastname
+        if name.find(" ") > -1:
+            reverseName = getReverseName(name)
+            seperateNameString = '( |\W)'+reverseName+'( |\W)'
+            endNameString = " "+reverseName
+            startNameString = reverseName+" "
+            import re
+            if re.search(seperateNameString, query) or query.endswith(endNameString) or query.startswith(startNameString):
+                playerList.append(getPlayerIDByName(name))
+                index = query.find(getReverseName(name))
+                query = query[0:index]+ replace + query[index+len(name):len(query)]
     #user input only includes players' last name
     lastNames = getLastNames()
     for i in range(len(lastNames)):
-        if lastNames[i] in query:
-            playerList.append(getPlayerIDByName(allPlayerNames[i][0]))
+        seperateNameString = '( |\W)'+lastNames[i]+'( |\W)'
+        endNameString = " "+lastNames[i]
+        startNameString = lastNames[i]+" "
+        import re
+        if re.search(seperateNameString, query) or query.endswith(endNameString) or query.startswith(startNameString):
+            playerList.append(getPlayerIDByName(allPlayerNames[i]))
             query = query.replace(lastNames[i], replace)
     return [playerList, query]
-
 
 #search for countries##################################################################################
 
@@ -140,7 +153,12 @@ def getAllLeagues():
     c.execute('SELECT name FROM league')
     leagueNames = c.fetchall()
     conn.close()
-    return leagueNames
+    #make system case insensitive
+    leagueNamesLower = list()
+    for league in leagueNames:
+        league = league[0]
+        leagueNamesLower.append(league.lower())
+    return leagueNamesLower
 
 #needed to handle input like e.g. "1. Bundesliga" instead of "Germany 1. Bundesliga"
 def getLeagueNameParts(name):
@@ -170,7 +188,7 @@ def getLeagueIDByName(name):
     sqlite_file = 'database.sqlite'
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    queryText = 'SELECT id FROM league WHERE name = "'+ name+'"'
+    queryText = 'SELECT id FROM league WHERE lower(name) = "'+ name+'"'
     c.execute(queryText)
     leagueID = c.fetchall()
     conn.close()
@@ -181,14 +199,14 @@ def getLeaguesInQuery(query):
     leagueList = list()
     replace = "LEAGUE"
     for name in getAllLeagues():
-        if name[0] in query:
-            query = query.replace(name[0], replace)
-            leagueList.append(getLeagueIDByName(name[0]))
+        if name in query:
+            query = query.replace(name, replace)
+            leagueList.append(getLeagueIDByName(name))
         else:
-            for part in getLeagueNameParts(name[0]):
+            for part in getLeagueNameParts(name):
                 if part in query:
                     query = query.replace(part, replace)
-                    leagueList.append(getLeagueIDByName(name[0]))
+                    leagueList.append(getLeagueIDByName(name))
     #checks if there is country information for the league in the query (e.g. "deutsche Liga")
     countryList = getCountryListInQuery(query)[0]
     query = getCountryListInQuery(query)[1]
@@ -206,12 +224,15 @@ def getAllTeamNames():
     c = conn.cursor()
     c.execute('SELECT team_long_name FROM team')
     teamNames = c.fetchall()
-    for i in range(0, len(teamNames)):
-        teamNames[i] = teamNames[i][0]
     conn.close()
+    #make system case insensitive
+    teamNamesLower = list()
+    for team in teamNames:
+        team = team[0]
+        teamNamesLower.append(team.lower())
     #remove dublicate entries
-    teamNames = list(set(teamNames))
-    return teamNames
+    teamNamesLower = list(set(teamNamesLower))
+    return teamNamesLower
 
 def getAllTeamAbbrevs():
     import sqlite3
@@ -221,12 +242,16 @@ def getAllTeamAbbrevs():
     c.execute('SELECT team_short_name FROM team')
     teamAbbrevs = c.fetchall()
     conn.close()
+    #make system case insensitive
+    #for team in teamAbbrevs:
+    #    team = team.lower() hier sinnvoll???
     return teamAbbrevs
 
 #split the team names to find e.g. "Bayern" instead of "FC Bayern Munich"
 def splitTeamNames():
     #first split all team names
     teamNamesSplitted = list()
+    offCutParts = list()
     teamNames = getAllTeamNames()
     for team in teamNames:
         teamNamesSplitted.append(team.split())
@@ -235,13 +260,14 @@ def splitTeamNames():
         #print(teamNamesSplitted[i])
         for part in teamNamesSplitted[i]:
             if len(part) < 4:
+                offCutParts.append(part)
                 teamNamesSplitted[i].remove(part)
     #remove dublicates
     for i in range(len(teamNamesSplitted)):
         for part in teamNamesSplitted[i]:
             if isDublicate(teamNamesSplitted, part) == True:
                 mergeElement(teamNamesSplitted, part)
-    return teamNamesSplitted   
+    return teamNamesSplitted, offCutParts   
 
 #check if there are teams that include the same names (e.g. "Manchester United" and "Manchester City")
 def isDublicate(teamList, checkElement):
@@ -266,11 +292,12 @@ def mergeElement(completeList, dublicateElement):
                     completeList[i][j] = dublicateElement + " " + completeList[i][j+1]  
 
 def getTeamIDByName(name):
+    print(name)
     import sqlite3
     sqlite_file = 'database.sqlite'
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    queryText = 'SELECT id FROM team WHERE team_long_name = "'+ name+'"'
+    queryText = 'SELECT id FROM team WHERE lower(team_long_name) = "'+ name+'"'
     c.execute(queryText)
     teamID = c.fetchall()
     conn.close()
@@ -307,7 +334,7 @@ def getTeamsInQuery(query):
             query = query.replace(name, replace)
             teamList.append(getTeamIDByName(name))
     #is the input a valid tranformed name for a team
-    splittedTeamNames = splitTeamNames()
+    splittedTeamNames, offCutTeamParts = splitTeamNames()
     for i in range(len(splittedTeamNames)):
         for part in splittedTeamNames[i]:
             #make sure the part is detached
@@ -317,9 +344,12 @@ def getTeamsInQuery(query):
                 matchedString = matchedObject.group(0)[1:][:-1]
                 query = query.replace(matchedString, replace)
                 teamList.append(getTeamIDByName(allTeamNames[i]))
-    #teamList = list(set(teamList))
+    #remove abbrevs of query (e.g. "FC")
+    for part in offCutTeamParts:
+        searchString = " "+part+" "
+        query = query.replace(searchString, " ")
     return [teamList, query]
-    
+
     
 #search for seasons##################################################################################
 
@@ -378,7 +408,7 @@ def getStagesInQuery(query):
     import re
     stageList = list()
     replace = "STAGE"
-    searchString = "\d+\.?\s?Spieltag"
+    searchString = "\d+\.?\s?spieltag"
     matchObject = re.findall(searchString, query)
     for match in matchObject:
         query = query.replace(match, replace)
