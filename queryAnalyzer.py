@@ -23,12 +23,11 @@ def getReverseName(name):
         return name[x+1:] + " "+ name[:x]
     return "XXX"
 
-def getLastNames():
+def getLastNames(allPlayerNames):
     import re
     #first split all team names
     lastNames = list()
-    names = getAllPlayerNames()
-    for name in names:
+    for name in allPlayerNames:
         wholeName = name
         lastName = wholeName
         if " " in wholeName and wholeName != "serey die":
@@ -53,7 +52,6 @@ def replaceDublicates(nameList, checkElement):
 
 #returns the database id of the player by name
 def getPlayerIDByName(name):
-    print(name)
     import sqlite3
     sqlite_file = 'database.sqlite'
     conn = sqlite3.connect(sqlite_file)
@@ -85,7 +83,7 @@ def getPlayersInQuery(query):
                 index = query.find(getReverseName(name))
                 query = query[0:index]+ replace + query[index+len(name):len(query)]
     #user input only includes players' last name
-    lastNames = getLastNames()
+    lastNames = getLastNames(allPlayerNames)
     for i in range(len(lastNames)):
         seperateNameString = '(^| )'+lastNames[i]+'( |$|\W)'
         import re
@@ -241,22 +239,18 @@ def getAllTeamAbbrevs():
     c.execute('SELECT team_short_name FROM team')
     teamAbbrevs = c.fetchall()
     conn.close()
-    #make system case insensitive
-    #for team in teamAbbrevs:
-    #    team = team.lower() hier sinnvoll???
     return teamAbbrevs
 
 #split the team names to find e.g. "Bayern" instead of "FC Bayern Munich"
-def splitTeamNames():
+def splitTeamNames(allTeamNames):
     #first split all team names
     teamNamesSplitted = list()
     offCutParts = list()
-    teamNames = getAllTeamNames()
+    teamNames = allTeamNames
     for team in teamNames:
         teamNamesSplitted.append(team.split())
     #remove abbrevs and numbers
     for i in range(len(teamNamesSplitted)):
-        #print(teamNamesSplitted[i])
         for part in teamNamesSplitted[i]:
             if len(part) < 4:
                 offCutParts.append(part)
@@ -327,7 +321,6 @@ def getTeamsInQuery(query):
             if isDublicate(allTeamAbbrevs, abbrev[0]) == False:
                 query = query.replace(abbrev[0], replace)
                 teamList.append(getTeamIDByAbbrev(abbrev[0]))
-            #else: Ausgabe: Definieren genauer, es gibt mehrere Teams mit dieser Abkürzung
     #is the input a valid name for a team
     allTeamNames = getAllTeamNames()
     for name in allTeamNames:
@@ -337,7 +330,7 @@ def getTeamsInQuery(query):
             query = query.replace(name, replace)
             teamList.append(getTeamIDByName(name))
     #is the input a valid tranformed name for a team
-    splittedTeamNames, offCutTeamParts = splitTeamNames()
+    splittedTeamNames, offCutTeamParts = splitTeamNames(allTeamNames)
     for i in range(len(splittedTeamNames)):
         for part in splittedTeamNames[i]:
             #make sure the part is detached
@@ -350,7 +343,7 @@ def getTeamsInQuery(query):
                 teamList.append(getTeamIDByName(allTeamNames[i]))
     #remove abbrevs of query (e.g. "FC")
     for part in offCutTeamParts:
-        searchString = " "+part+" "
+        searchString = '(^| )'+part+'( |$|\W)'
         query = query.replace(searchString, " ")
     teamList = list(set(teamList))
     return [teamList, query]
@@ -372,9 +365,8 @@ def getAllSeasons():
     conn.close()
     return allSeasons
 
-def getAllSeasonAbbrevs():
+def getAllSeasonAbbrevs(allSeasons):
     abbrevList = list()
-    allSeasons = getAllSeasons()
     for season in allSeasons:
         season = season[1:]
         season = season[1:]
@@ -383,9 +375,7 @@ def getAllSeasonAbbrevs():
         abbrevList.append(season)
     return abbrevList
 
-def getSeasonByAbbrev(abbrev):
-    allSeasons = getAllSeasons()
-    allAbbrevs = getAllSeasonAbbrevs()
+def getSeasonByAbbrev(abbrev, allSeasons, allAbbrevs):
     for element in allAbbrevs:
         if abbrev == element:
             index = allAbbrevs.index(element)
@@ -401,29 +391,33 @@ def getSeasonsInQuery(query):
         if re.search(searchString, query):
             query = query.replace(season, replace)
             seasonList.append(season)
-    allAbbrevs = getAllSeasonAbbrevs()
+    allAbbrevs = getAllSeasonAbbrevs(allSeasons)
     for abbrev in allAbbrevs:
         import re
         searchString = '(^| )'+abbrev+'( |$|\W)'
         if re.search(searchString, query):
             query = query.replace(abbrev, replace)
-            seasonList.append(getSeasonByAbbrev(abbrev))
+            seasonList.append(getSeasonByAbbrev(abbrev, allSeasons, allAbbrevs))
+    query = query.replace("saison", "") 
     return [seasonList, query]
 
 
 #search for stages##################################################################################
 
-def getStagesInQuery(query):
+def getStages(query):
     import re
     stageList = list()
     replace = "STAGE"
-    searchString = "\d+\.?\s(spiel)?tag"
-    matchObject = re.findall(searchString, query)
+    searchString = re.compile("(\d+\.?\s?spieltag)")
+    matchObject = searchString.findall(query)
+    print(matchObject)
     for match in matchObject:
+        print(match)
         query = query.replace(match, replace)
         stageString = ""
         for element in match:
-            if element != "." and element != "S" and element != " ":
+            print(element)
+            if element != "." and element != "s" and element != " ":
                 stageString = stageString + element
             else: break
         stageList.append(stageString)
