@@ -31,7 +31,7 @@ def getLastNames():
     for name in names:
         wholeName = name
         lastName = wholeName
-        if " " in wholeName:
+        if " " in wholeName and wholeName != "serey die":
             lastName = re.sub('\w+ ', '', wholeName, 1)
             lastName = re.sub(',.*$', '', lastName)
         lastNames.append(lastName)
@@ -70,32 +70,26 @@ def getPlayersInQuery(query):
     replace = "SPIELER"
     allPlayerNames = getAllPlayerNames()
     for name in allPlayerNames:
-        seperateNameString = '( |\W)'+name+'( |\W)'
-        endNameString = " "+name
-        startNameString = name+" "
+        seperateNameString = '(^| )'+name+'( |$|\W)'
         import re
-        if re.search(seperateNameString, query) or query.endswith(endNameString) or query.startswith(startNameString):
+        if re.search(seperateNameString, query):
             playerList.append(getPlayerIDByName(name))
             query = query.replace(name, replace)
         #user input pattern: Lastname Firstname instead of Firstname Lastname
         if name.find(" ") > -1:
             reverseName = getReverseName(name)
-            seperateNameString = '( |\W)'+reverseName+'( |\W)'
-            endNameString = " "+reverseName
-            startNameString = reverseName+" "
+            seperateNameString = '(^| )'+reverseName+'( |$|\W)'
             import re
-            if re.search(seperateNameString, query) or query.endswith(endNameString) or query.startswith(startNameString):
+            if re.search(seperateNameString, query):
                 playerList.append(getPlayerIDByName(name))
                 index = query.find(getReverseName(name))
                 query = query[0:index]+ replace + query[index+len(name):len(query)]
     #user input only includes players' last name
     lastNames = getLastNames()
     for i in range(len(lastNames)):
-        seperateNameString = '( |\W)'+lastNames[i]+'( |\W)'
-        endNameString = " "+lastNames[i]
-        startNameString = lastNames[i]+" "
+        seperateNameString = '(^| )'+lastNames[i]+'( |$|\W)'
         import re
-        if re.search(seperateNameString, query) or query.endswith(endNameString) or query.startswith(startNameString):
+        if re.search(seperateNameString, query):
             playerList.append(getPlayerIDByName(allPlayerNames[i]))
             query = query.replace(lastNames[i], replace)
     return [playerList, query]
@@ -135,8 +129,9 @@ def getCountryListInQuery(query):
     replace = "COUNTRY"
     for regEx in getRegExForCountries():
         combinedRegEx = regEx + " (League|Liga)"
-        matchObject = re.search(combinedRegEx, query, re.IGNORECASE)
-        if matchObject:
+        import re
+        searchString = '(^| )'+combinedRegEx+'( |$|\W)'
+        if re.search(searchString, query, re.IGNORECASE):
             matchedString = matchObject.group(0)
             query = query.replace(matchedString, replace)
             foundCountryList.append(getAllCountries()[getRegExForCountries().index(regEx)])
@@ -199,12 +194,16 @@ def getLeaguesInQuery(query):
     leagueList = list()
     replace = "LEAGUE"
     for name in getAllLeagues():
-        if name in query:
+        import re
+        searchString = '(^| )'+name+'( |$|\W)'
+        if re.search(searchString, query):
             query = query.replace(name, replace)
             leagueList.append(getLeagueIDByName(name))
         else:
             for part in getLeagueNameParts(name):
-                if part in query:
+                seperateNameString = '(^| )'+part+'( |$|\W)'
+                import re
+                if re.search(seperateNameString, query):
                     query = query.replace(part, replace)
                     leagueList.append(getLeagueIDByName(name))
     #checks if there is country information for the league in the query (e.g. "deutsche Liga")
@@ -265,7 +264,7 @@ def splitTeamNames():
     #remove dublicates
     for i in range(len(teamNamesSplitted)):
         for part in teamNamesSplitted[i]:
-            if isDublicate(teamNamesSplitted, part) == True:
+            if isDublicate(teamNamesSplitted, part) == True or part == "den":
                 mergeElement(teamNamesSplitted, part)
     return teamNamesSplitted, offCutParts   
 
@@ -322,7 +321,9 @@ def getTeamsInQuery(query):
     #is the input a valid abbreviation for a team
     allTeamAbbrevs = getAllTeamAbbrevs()
     for abbrev in allTeamAbbrevs:
-        if abbrev[0] in query:
+        import re
+        searchString = '(^| )'+abbrev[0]+'( |$|\W)'
+        if re.search(searchString, query):
             if isDublicate(allTeamAbbrevs, abbrev[0]) == False:
                 query = query.replace(abbrev[0], replace)
                 teamList.append(getTeamIDByAbbrev(abbrev[0]))
@@ -330,7 +331,9 @@ def getTeamsInQuery(query):
     #is the input a valid name for a team
     allTeamNames = getAllTeamNames()
     for name in allTeamNames:
-        if name in query:
+        import re
+        searchString = '(^| )'+name+'( |$|\W)'
+        if re.search(searchString, query):
             query = query.replace(name, replace)
             teamList.append(getTeamIDByName(name))
     #is the input a valid tranformed name for a team
@@ -338,7 +341,8 @@ def getTeamsInQuery(query):
     for i in range(len(splittedTeamNames)):
         for part in splittedTeamNames[i]:
             #make sure the part is detached
-            searchString = " "+part+"( |\W)"
+            import re
+            searchString = '(^| )'+part+'( |$|\W)'
             matchedObject = re.search(searchString, query)
             if matchedObject:
                 matchedString = matchedObject.group(0)[1:][:-1]
@@ -348,6 +352,7 @@ def getTeamsInQuery(query):
     for part in offCutTeamParts:
         searchString = " "+part+" "
         query = query.replace(searchString, " ")
+    teamList = list(set(teamList))
     return [teamList, query]
 
     
@@ -391,12 +396,16 @@ def getSeasonsInQuery(query):
     replace = "SEASON"
     allSeasons = getAllSeasons()
     for season in allSeasons:
-        if season in query:
+        import re
+        searchString = '(^| )'+season+'( |$|\W)'
+        if re.search(searchString, query):
             query = query.replace(season, replace)
             seasonList.append(season)
     allAbbrevs = getAllSeasonAbbrevs()
     for abbrev in allAbbrevs:
-        if abbrev in query:
+        import re
+        searchString = '(^| )'+abbrev+'( |$|\W)'
+        if re.search(searchString, query):
             query = query.replace(abbrev, replace)
             seasonList.append(getSeasonByAbbrev(abbrev))
     return [seasonList, query]
@@ -408,7 +417,7 @@ def getStagesInQuery(query):
     import re
     stageList = list()
     replace = "STAGE"
-    searchString = "\d+\.?\s?spieltag"
+    searchString = "\d+\.?\s(spiel)?tag"
     matchObject = re.findall(searchString, query)
     for match in matchObject:
         query = query.replace(match, replace)
