@@ -236,7 +236,7 @@ def getAllTeamAbbrevs():
     sqlite_file = 'database.sqlite'
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    c.execute('SELECT team_short_name FROM team')
+    c.execute('SELECT team_short_name FROM team WHERE NOT team_short_name = "DEN"')
     teamAbbrevs = c.fetchall()
     conn.close()
     return teamAbbrevs
@@ -249,12 +249,14 @@ def splitTeamNames(allTeamNames):
     teamNames = allTeamNames
     for team in teamNames:
         teamNamesSplitted.append(team.split())
-    #remove abbrevs and numbers
+    #remove abbrevs and numbers and handle special: "Munich" -> "Muenchen"
     for i in range(len(teamNamesSplitted)):
         for part in teamNamesSplitted[i]:
             if len(part) < 4:
                 offCutParts.append(part)
                 teamNamesSplitted[i].remove(part)
+            if part == "Munich"
+                teamNamesSplitted[i].add("Muenchen")
     #remove dublicates
     for i in range(len(teamNamesSplitted)):
         for part in teamNamesSplitted[i]:
@@ -300,7 +302,7 @@ def getTeamIDByAbbrev(teamAbbrev):
     sqlite_file = 'database.sqlite'
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    queryText = 'SELECT id FROM team WHERE team_short_name = "'+ teamAbbrev+'"'
+    queryText = 'SELECT id FROM team WHERE lower(team_short_name) = "'+ teamAbbrev+'"'
     c.execute(queryText)
     teamID = c.fetchall()
     conn.close()
@@ -410,11 +412,12 @@ def getStagesInQuery(query):
     searchString = re.compile("(\d+\.?\s?spieltag)")
     matchObject = searchString.findall(query)
     for match in matchObject:
-        query = query.replace(match, replace)
         stageString = ""
         for element in match:
             if element != "." and element != "s" and element != " ":
                 stageString = stageString + element
             else: break
-        stageList.append(stageString)
+        if int(stageString) > 38:
+            query = query.replace(match, replace)
+            stageList.append(stageString)
     return [stageList, query]
