@@ -6,7 +6,7 @@ import json
 
 from flair.data import Sentence
 
-from flair.embeddings import WordEmbeddings, FlairEmbeddings, StackedEmbeddings
+from flair.embeddings import WordEmbeddings
 german_embedding = WordEmbeddings('de-crawl')
 
 
@@ -149,8 +149,8 @@ def useSplitTrainAndTestData():
         trainData[str(i)] = obj[str(i)][objectsToRemove:]
         testData[str(i)] = obj[str(i)][0:objectsToRemove]
         
-def oneMRR():
-# Evaluation
+def oneMRR(testSize):
+# Evaluation over all different Categories of Data
 
     trainData = dict()
     testData = dict()
@@ -163,8 +163,9 @@ def oneMRR():
         
     for i in range(0,23):
         random.shuffle(obj[str(i)])
-        objectsToRemove = random.randint(1, int(len(obj[str(i)])/2)) #Zufällige zahl die kleiner ist als die Hälfte der Trainigssätze
-
+        objectsToRemove = int(len(obj[str(i)])*testSize)
+        if(objectsToRemove == 0):
+            objectsToRemove = 1
         trainData[str(i)] = obj[str(i)][objectsToRemove:]
         testData[str(i)] = obj[str(i)][0:objectsToRemove]
 
@@ -204,15 +205,15 @@ def oneMRR():
             
     return totalscore/validtests
     
-def loopMRR(numLoops):
+def loopMRR(numLoops, testSize):
     values = []
     for i in range(0, numLoops):
-        values.append(oneMRR())
+        values.append(oneMRR(testSize))
     return values
 
 
-def RRbyIndex(position):
-
+def RRbyIndex(position, testSize):
+# Evaluation of a specific type of category
 
     trainData = dict()
     testData = dict()
@@ -225,8 +226,7 @@ def RRbyIndex(position):
         
     for i in range(0,23):
         random.shuffle(obj[str(i)])
-        objectsToRemove = random.randint(1, int(len(obj[str(i)])/2)) #Zufällige zahl die kleiner ist als die Hälfte der Trainigssätze
-
+        objectsToRemove = int(len(obj[str(i)])*testSize)
         trainData[str(i)] = obj[str(i)][objectsToRemove:]
         testData[str(i)] = obj[str(i)][0:objectsToRemove]
 
@@ -270,8 +270,8 @@ def RRbyIndex(position):
         return 0
     return totalscore/validtests
     
-def loopRRbyIndex(numLoops, position):
+def loopRRbyIndex(numLoops, position, testSize):
     values = []
     for i in range(0, numLoops):
-        values.append(RRbyIndex(position))
+        values.append(RRbyIndex(position, testSize))
     return values
