@@ -258,12 +258,12 @@ def splitTeamNames(allTeamNames):
     #remove dublicates
     for i in range(len(teamNamesSplitted)):
         for part in teamNamesSplitted[i]:
-            if isDublicate(teamNamesSplitted, part) == True or part == "den":
+            if isDuplicate(teamNamesSplitted, part) == True or part == "den":
                 mergeElement(teamNamesSplitted, part)
     return teamNamesSplitted, offCutParts   
 
 #check if there are teams that include the same names (e.g. "Manchester United" and "Manchester City")
-def isDublicate(teamList, checkElement):
+def isDuplicate(teamList, checkElement):
     count = 0
     for team in teamList:
         for element in team:
@@ -285,7 +285,6 @@ def mergeElement(completeList, dublicateElement):
                     completeList[i][j] = dublicateElement + " " + completeList[i][j+1]  
 
 def getTeamIDByName(name):
-    print(name)
     import sqlite3
     sqlite_file = 'database.sqlite'
     conn = sqlite3.connect(sqlite_file)
@@ -318,7 +317,7 @@ def getTeamsInQuery(query):
         import re
         searchString = '(^| )'+abbrev[0]+'( |$|\W)'
         if re.search(searchString, query):
-            if isDublicate(allTeamAbbrevs, abbrev[0]) == False:
+            if isDuplicate(allTeamAbbrevs, abbrev[0]) == False:
                 query = query.replace(abbrev[0], replace)
                 teamList.append(getTeamIDByAbbrev(abbrev[0]))
     #is the input a valid name for a team
@@ -404,19 +403,16 @@ def getSeasonsInQuery(query):
 
 #search for stages##################################################################################
 
-def getStages(query):
+def getStagesInQuery(query):
     import re
     stageList = list()
     replace = "STAGE"
     searchString = re.compile("(\d+\.?\s?spieltag)")
     matchObject = searchString.findall(query)
-    print(matchObject)
     for match in matchObject:
-        print(match)
         query = query.replace(match, replace)
         stageString = ""
         for element in match:
-            print(element)
             if element != "." and element != "s" and element != " ":
                 stageString = stageString + element
             else: break

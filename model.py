@@ -86,7 +86,6 @@ def getAnswer(question, trainData):
     queryV = getVectorOfQuery(dQ[1]) # erwarter preprocessed Query, TODO 
     
     queryRefined = [pQ[0],lQ[0],tQ[0],sQ[0],dQ[0]]
-    print(queryRefined)
     
     queryToCompare = [len(queryRefined[0]),len(queryRefined[1]),len(queryRefined[2]),len(queryRefined[3]),len(queryRefined[4])]
     possibleAnswers = matchByOccurance(queryToCompare)
@@ -169,7 +168,6 @@ def oneMRR():
         trainData[str(i)] = obj[str(i)][objectsToRemove:]
         testData[str(i)] = obj[str(i)][0:objectsToRemove]
 
-
     validtests = 0
     totalscore = 0
 
@@ -193,18 +191,14 @@ def oneMRR():
                         cosAngle = angle_between(getVectorOfAnswer(answers[index][6], queryV, trainData),queryV)
                         angles[str(index)] = cosAngle
                
-                validtests = 0
-                totalscore = 0
                 if wantedAnswer in angles.keys():
                     validtests+=1
                     wantedAngle = angles[wantedAnswer]
                     score = 1
                     for value in angles.values():
-                        #print("value "+ str(value))
                         if(value < wantedAngle):  #lower score if there are better results
                             score = score +1
                     totalscore += 1/score
-                    
                     
                
             
@@ -241,7 +235,6 @@ def RRbyIndex(position):
     totalscore = 0
 
     for key,v in testData.items():
-        #print("new Category")
         for i in range(0,22):
             if(str(answers[i][6]) == str(key)):
                 wantedAnswer = str(i)
@@ -252,7 +245,6 @@ def RRbyIndex(position):
                 queryV = getVectorOfQuery(query)
                 queryToCompare = [query.count("SPIELER"),query.count("COUNTRY"),query.count("TEAM"),query.count("SEASON"),query.count("STAGE")]
                 possibleAnswers = matchByOccurance(queryToCompare)
-                
                 if(len(possibleAnswers)>1):
                     angles = {}
                     for index in possibleAnswers:
@@ -262,8 +254,6 @@ def RRbyIndex(position):
                             cosAngle = angle_between(getVectorOfAnswer(answers[index][6], queryV, trainData),queryV)
                             angles[str(index)] = cosAngle
                     
-                    validtests = 0
-                    totalscore = 0
                     if wantedAnswer in angles.keys():
                         validtests +=1
                         

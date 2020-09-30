@@ -13,7 +13,6 @@ def getBirthday(query):
 
 #returns answer if user asks for player's weight
 def getWeight(query):
-    print("get weight")
     import sqlite3
     conn = sqlite3.connect('database.sqlite')
     c = conn.cursor()
@@ -27,7 +26,6 @@ def getWeight(query):
 
 #returns answer if user asks for player's height
 def getHeight(query):
-    print("get Height")
     import sqlite3
     conn = sqlite3.connect('database.sqlite')
     c = conn.cursor()
@@ -85,7 +83,6 @@ def getSeasonsOfPlayerInTeam(query):
 
 #returns answer if user asks for team-stats of stage
 def getStageStatsOfTeam(query):
-    print("getStageStatsOfTeam")
     team = getTeamApiIDByID(query[2][0])
     stage = query[4][0]
     stage_string = 'stage = "' + stage + '"'
@@ -224,17 +221,19 @@ def getAnswers():
     answers.append([1,0,0,0,0, getHeight, 6])
     answers.append([1,0,0,0,0, getPreferredFoot, 2])
     answers.append([1,0,0,0,0, getTeamOfPlayer, 3])
+    
+    
     answers.append([1,0,0,1,0, getTeamOfPlayerInSeason, 4])
-        
     answers.append([1,0,1,0,0, getSeasonsOfPlayerInTeam, 5 ])
+    
     
     answers.append([0,0,1,0,1, getStageStatsOfTeam, 16])
     answers.append([0,0,1,1,1, getStageStatsOfTeam, 7])
     
     answers.append([0,0,1,1,1, getRival, 8])
     
-    answers.append([0,0,1,1,1, getLineup, 17])
-    answers.append([0,0,1,0,1, getLineup, 9])
+    answers.append([0,0,1,1,1, getLineup, 9])
+    answers.append([0,0,1,0,1, getLineup, 17])
     
     answers.append([0,0,1,1,1, getWasHomeTeam, 11])
     answers.append([0,0,1,0,1, getWasHomeTeam, 18])
@@ -468,7 +467,6 @@ def getTeamApiIDByPlayerID(player_id, season):
         import sqlite3
         conn = sqlite3.connect('database.sqlite')
         c = conn.cursor()
-        #print(str(matches[0][0]))
         queryText = 'SELECT home_team_api_id FROM match WHERE id = ' + str(matches[0][0])
         c.execute(queryText)
         result = c.fetchall()
