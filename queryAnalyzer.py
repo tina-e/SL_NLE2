@@ -417,7 +417,7 @@ def getStagesInQuery(query):
             if element != "." and element != "s" and element != " ":
                 stageString = stageString + element
             else: break
-        if int(stageString) > 38:
+        if int(stageString) < 39 and int(stageString) > 0:
             query = query.replace(match, replace)
             stageList.append(stageString)
     return [stageList, query]
