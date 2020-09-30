@@ -13,6 +13,7 @@ def getBirthday(query):
 
 #returns answer if user asks for player's weight
 def getWeight(query):
+    print("get weight")
     import sqlite3
     conn = sqlite3.connect('database.sqlite')
     c = conn.cursor()
@@ -26,6 +27,7 @@ def getWeight(query):
 
 #returns answer if user asks for player's height
 def getHeight(query):
+    print("get Height")
     import sqlite3
     conn = sqlite3.connect('database.sqlite')
     c = conn.cursor()
@@ -79,10 +81,9 @@ def getSeasonsOfPlayerInTeam(query):
     return "Die Person spielte " + str(seasons) + " beim diesem Verein."
 
 
-    
-
 #returns answer if user asks for team-stats of stage
 def getStageStatsOfTeam(query):
+    print("getStageStatsOfTeam")
     team = getTeamApiIDByID(query[2][0])
     stage = query[4][0]
     stage_string = 'stage = "' + stage + '"'
@@ -221,19 +222,17 @@ def getAnswers():
     answers.append([1,0,0,0,0, getHeight, 6])
     answers.append([1,0,0,0,0, getPreferredFoot, 2])
     answers.append([1,0,0,0,0, getTeamOfPlayer, 3])
-    
-    
     answers.append([1,0,0,1,0, getTeamOfPlayerInSeason, 4])
+        
     answers.append([1,0,1,0,0, getSeasonsOfPlayerInTeam, 5 ])
-    
     
     answers.append([0,0,1,0,1, getStageStatsOfTeam, 16])
     answers.append([0,0,1,1,1, getStageStatsOfTeam, 7])
     
     answers.append([0,0,1,1,1, getRival, 8])
     
-    answers.append([0,0,1,1,1, getLineup, 9])
-    answers.append([0,0,1,0,1, getLineup, 17])
+    answers.append([0,0,1,1,1, getLineup, 17])
+    answers.append([0,0,1,0,1, getLineup, 9])
     
     answers.append([0,0,1,1,1, getWasHomeTeam, 11])
     answers.append([0,0,1,0,1, getWasHomeTeam, 18])
@@ -254,50 +253,6 @@ def getAnswers():
 
 #########################################################################################################################
 
-
-
-#ungenutzt
-def getHomeGoalsAgainst(team_api_id1, team_api_id2, season):
-    import sqlite3
-    conn = sqlite3.connect('database.sqlite')
-    c = conn.cursor()
-    
-    season = " AND season = " + season 
-    
-    queryText = 'SELECT home_team_goal FROM match WHERE (home_team_api_id = '+str(team_api_id1)+' AND away_team_api_id = '+str(team_api_id2)+ ")" + season
-    c.execute(queryText)
-    result = c.fetchall()
-    conn.close()
-    return result
-
-
-#ungenutzt
-def getAwayGoalsAgainst(team_api_id1, team_api_id2, season):
-    import sqlite3
-    conn = sqlite3.connect('database.sqlite')
-    c = conn.cursor()
-
-    season = " AND season = " + season 
-    
-    queryText = 'SELECT away_team_goal FROM match WHERE (away_team_api_id = '+str(team_api_id1)+' AND home_team_api_id = '+str(team_api_id2)+ ')' + season
-    c.execute(queryText)
-    result = c.fetchall()
-    conn.close()
-    return result
-
-
-#TODO? s.oben 
-def getTeamVsTeamStatsByTeamApiIDs(team1_api_id, team2_api_id, season):
-    import sqlite3
-    conn = sqlite3.connect('database.sqlite')
-    c = conn.cursor()
-    
-    queryText = 'SELECT home_team_goal, away_team_goal' #...
-    
-    c.execute(queryText)
-    result = c.fetchall()
-    conn.close()
-    return
 
 
 #returns number of goals of a specific team in a specific game
@@ -499,28 +454,55 @@ def getTeamApiIDByID(team_id):
     return result[0][0]
 
 
-#ungenutzt
-#returns team-name by team-id
-def getTeamNameByID(team_id):
-    import sqlite3
-    conn = sqlite3.connect('database.sqlite')
-    c = conn.cursor()
-    queryText = 'SELECT team_long_name FROM team WHERE id = ' + str(team_id)
-    c.execute(queryText)
-    result = c.fetchall()
-    conn.close()
-    return result[0][0]
+#################################################################################################
+#following functions can be used to extend the system
 
-#ungenutzt
-#returns team-api-is by team-name
-def getTeamApiIDByName(team_name):
+#unused yet
+def getHomeGoalsAgainst(team_api_id1, team_api_id2, season):
     import sqlite3
     conn = sqlite3.connect('database.sqlite')
     c = conn.cursor()
-    team_name = '"' + team_name + '"'
-    queryText = 'SELECT team_api_id FROM team WHERE team_long_name =' + team_name
+    
+    season = " AND season = " + season 
+    
+    queryText = 'SELECT home_team_goal FROM match WHERE (home_team_api_id = '+str(team_api_id1)+' AND away_team_api_id = '+str(team_api_id2)+ ")" + season
     c.execute(queryText)
     result = c.fetchall()
     conn.close()
-    #return queryText
-    return result[0][0]
+    return result
+
+
+#unused yet
+def getAwayGoalsAgainst(team_api_id1, team_api_id2, season):
+    import sqlite3
+    conn = sqlite3.connect('database.sqlite')
+    c = conn.cursor()
+
+    season = " AND season = " + season 
+    
+    queryText = 'SELECT away_team_goal FROM match WHERE (away_team_api_id = '+str(team_api_id1)+' AND home_team_api_id = '+str(team_api_id2)+ ')' + season
+    c.execute(queryText)
+    result = c.fetchall()
+    conn.close()
+    return result
+
+
+#unused yet
+def getTeamVsTeamStatsByTeamApiIDs(team1_api_id, team2_api_id, season):
+    import sqlite3
+    conn = sqlite3.connect('database.sqlite')
+    c = conn.cursor()
+    
+    if season:
+        season = " AND season = " + season
+    else:
+        season = ""
+    
+    where_string_option1 = "(home_team_api_id = "+str(team1_api_id)+" AND away_team_api_id = "+str(team2_api_id)+")"
+    where_string_option2 = "(home_team_api_id = "+str(team2_api_id)+" AND away_team_api_id = "+str(team1_api_id)+")"
+    queryText = 'SELECT home_team_goal, away_team_goal FROM match WHERE '+where_string_option1+ ' OR '+where_string_option2+ ')' + season 
+    
+    c.execute(queryText)
+    result = c.fetchall()
+    conn.close()
+    return result
