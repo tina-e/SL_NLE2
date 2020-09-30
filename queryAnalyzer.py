@@ -255,7 +255,7 @@ def splitTeamNames(allTeamNames):
             if len(part) < 4:
                 offCutParts.append(part)
                 teamNamesSplitted[i].remove(part)
-            if part == "Munich"
+            if part == "Munich":
                 teamNamesSplitted[i].add("Muenchen")
     #remove dublicates
     for i in range(len(teamNamesSplitted)):
